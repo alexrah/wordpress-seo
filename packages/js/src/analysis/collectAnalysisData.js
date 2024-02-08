@@ -10,6 +10,7 @@ import getWritingDirection from "./getWritingDirection";
 
 import { Paper } from "yoastseo";
 
+/* eslint-disable complexity */
 
 /**
  * Retrieves the data needed for the analyses.
@@ -36,7 +37,8 @@ export default function collectAnalysisData( editorData, store, customAnalysisDa
 	// Retrieve the block editor blocks from WordPress and filter on useful information.
 	let blocks = null;
 	if ( blockEditorDataModule ) {
-		blocks = blockEditorDataModule.getBlocks();
+		blocks = blockEditorDataModule.getBlocks() || [];
+		blocks = blocks.filter( block => block.isValid );
 	}
 
 	// Make a data structure for the paper data.

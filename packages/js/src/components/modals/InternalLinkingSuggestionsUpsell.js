@@ -4,10 +4,11 @@ import { __, sprintf } from "@wordpress/i18n";
 import { addQueryArgs } from "@wordpress/url";
 import { useRootContext } from "@yoast/externals/contexts";
 import { Badge, useSvgAria, useToggleState } from "@yoast/ui-library";
+import { getPremiumBenefits } from "../../helpers/get-premium-benefits";
 import { MetaboxButton } from "../MetaboxButton";
 import SidebarButton from "../SidebarButton";
 import UpsellBox from "../UpsellBox";
-import { ModalContainer } from "./Container";
+import { ModalSmallContainer } from "./Container";
 import Modal, { defaultModalClassName } from "./Modal";
 
 /**
@@ -34,35 +35,22 @@ export const InternalLinkingSuggestionsUpsell = () => {
 					onRequestClose={ closeModal }
 					additionalClassName=""
 					id="yoast-internal-linking-suggestions-upsell"
-					className={ defaultModalClassName }
+					className={ `${ defaultModalClassName } yoast-gutenberg-modal__box yoast-gutenberg-modal__no-padding` }
 					shouldCloseOnClickOutside={ true }
 				>
-					<ModalContainer>
-						<h2 className="yst-mt-0 yst-mb-4">{ __( "Rank higher by connecting your content", "wordpress-seo" ) }</h2>
+					<ModalSmallContainer>
 						<UpsellBox
-							infoParagraphs={ [
-								<span key="InternalLinkingSuggestionsUpsell-infoParagraph-description" className="yst-block yst-max-w-[426px]">
-									{ sprintf(
-										/* translators: %s expands to Yoast SEO Premium. */
-										__( "%s automatically suggests to what content you can link with easy drag-and-drop functionality, which is good for your SEO!", "wordpress-seo" ),
-										"Yoast SEO Premium"
-									) }
-								</span>,
-								<span
-									key="InternalLinkingSuggestionsUpsell-infoParagraph-benefitsTitle"
-									className="yst-block yst-my-3 yst-text-[#303030] yst-text-[13px] yst-font-semibold"
-								>
-									{ __( "What’s more in Yoast SEO Premium?", "wordpress-seo" ) }
-								</span>,
-							] }
-							benefits={ [
-								__( "Create content faster: Use AI to create titles & meta descriptions", "wordpress-seo" ),
-								__( "Get extra SEO checks with the Premium SEO analysis", "wordpress-seo" ),
-								__( "Get help ranking for multiple keyphrases", "wordpress-seo" ),
-								__( "Avoid dead links on your site", "wordpress-seo" ),
-								__( "Preview how your content looks when shared on social", "wordpress-seo" ),
-								__( "Get guidance & save time on routine SEO tasks", "wordpress-seo" ),
-							] }
+							title={ __( "Rank higher by connecting your content", "wordpress-seo" ) }
+							description={ sprintf(
+								/* translators: %s expands to Yoast SEO Premium. */
+								__( "%s automatically suggests to what content you can link with easy drag-and-drop functionality, which is good for your SEO!", "wordpress-seo" ),
+								"Yoast SEO Premium"
+							) }
+							benefitsTitle={
+								/* translators: %s expands to 'Yoast SEO Premium'. */
+								sprintf( "%s also gives you:", "Yoast SEO Premium" )
+							}
+							benefits={ getPremiumBenefits() }
 							upsellButtonText={
 								sprintf(
 									/* translators: %s expands to 'Yoast SEO Premium'. */
@@ -79,7 +67,7 @@ export const InternalLinkingSuggestionsUpsell = () => {
 							} }
 							upsellButtonLabel={ __( "1 year free support and updates included!", "wordpress-seo" ) }
 						/>
-					</ModalContainer>
+					</ModalSmallContainer>
 				</Modal>
 			) }
 			{ isSidebar && (

@@ -1,12 +1,12 @@
 /* External dependencies */
-import { select } from "@wordpress/data";
-import { Fragment, useCallback } from "@wordpress/element";
+import { useSelect } from "@wordpress/data";
+import { Fragment } from "@wordpress/element";
 import { Fill } from "@wordpress/components";
 import { __ } from "@wordpress/i18n";
 import PropTypes from "prop-types";
-import { colors } from "@yoast/style-guide";
 
 /* Internal dependencies */
+import WincherSEOPerformanceModal from "../../containers/WincherSEOPerformanceModal";
 import CollapsibleCornerstone from "../../containers/CollapsibleCornerstone";
 import SnippetEditor from "../../containers/SnippetEditor";
 import Warning from "../../containers/Warning";
@@ -19,7 +19,6 @@ import AdvancedSettings from "../../containers/AdvancedSettings";
 import SocialMetadataPortal from "../portals/SocialMetadataPortal";
 import SchemaTabContainer from "../../containers/SchemaTab";
 import SEMrushRelatedKeyphrases from "../../containers/SEMrushRelatedKeyphrases";
-import WincherSEOPerformance from "../../containers/WincherSEOPerformance";
 import { isWordProofIntegrationActive } from "../../helpers/wordproof";
 import WordProofAuthenticationModals from "../../components/modals/WordProofAuthenticationModals";
 import PremiumSEOAnalysisModal from "../modals/PremiumSEOAnalysisModal";
@@ -29,40 +28,23 @@ import { BlackFridayPromotion } from "../BlackFridayPromotion";
 import { isWooCommerceActive } from "../../helpers/isWooCommerceActive";
 import { withMetaboxWarningsCheck } from "../higherorder/withMetaboxWarningsCheck";
 
+const BlackFridayProductEditorChecklistPromotionWithMetaboxWarningsCheck = withMetaboxWarningsCheck( BlackFridayProductEditorChecklistPromotion );
+const BlackFridayPromotionWithMetaboxWarningsCheck = withMetaboxWarningsCheck( BlackFridayPromotion );
+
 /* eslint-disable complexity */
 /**
  * Creates the Metabox component.
  *
  * @param {Object} settings 				The feature toggles.
- * @param {Object} store    				The Redux store.
- * @param {Object} theme    				The theme to use.
- * @param {Array} wincherKeyphrases 		The Wincher trackable keyphrases.
- * @param {Function} setWincherNoKeyphrase	Sets wincher no keyphrases in the store.
  *
  * @returns {wp.Element} The Metabox component.
  */
-export default function MetaboxFill( { settings, wincherKeyphrases, setWincherNoKeyphrase } ) {
-	const onToggleWincher = useCallback( () => {
-		if ( ! wincherKeyphrases.length ) {
-			setWincherNoKeyphrase( true );
-			// This is fragile, should replace with a real React ref.
-			document.querySelector( "#focus-keyword-input-metabox" ).focus();
-			return false;
-		}
-	}, [ wincherKeyphrases, setWincherNoKeyphrase ] );
+export default function MetaboxFill( { settings } ) {
+	const isTerm = useSelect( ( select ) => select( "yoast-seo/editor" ).getIsTerm(), [] );
+	const isProduct = useSelect( ( select ) => select( "yoast-seo/editor" ).getIsProduct(), [] );
 
-	/**
-	 * Checks if the WooCommerce promo should be shown.
-	 *
-	 * @returns {boolean} Whether the WooCommerce promo should be shown.
-	 */
-	const shouldShowWooCommerceChecklistPromo = () => {
-		const isProduct = select( "yoast-seo/editor" ).getIsProduct();
-		return isProduct && isWooCommerceActive();
-	};
+	const shouldShowWooCommerceChecklistPromo = isProduct && isWooCommerceActive();
 
-	const BlackFridayProductEditorChecklistPromotionWithMetaboxWarningsCheck = withMetaboxWarningsCheck( BlackFridayProductEditorChecklistPromotion );
-	const BlackFridayPromotionWithMetaboxWarningsCheck = withMetaboxWarningsCheck( BlackFridayPromotion );
 	return (
 		<>
 			{ isWordProofIntegrationActive() && <WordProofAuthenticationModals /> }
@@ -77,7 +59,7 @@ export default function MetaboxFill( { settings, wincherKeyphrases, setWincherNo
 					key="time-constrained-notification"
 					renderPriority={ 2 }
 				>
-					{ shouldShowWooCommerceChecklistPromo() && <BlackFridayProductEditorChecklistPromotionWithMetaboxWarningsCheck /> }
+					{ shouldShowWooCommerceChecklistPromo && <BlackFridayProductEditorChecklistPromotionWithMetaboxWarningsCheck /> }
 					<BlackFridayPromotionWithMetaboxWarningsCheck image={ null } hasIcon={ false } location={ "metabox" } />
 				</SidebarItem>
 				{ settings.isKeywordAnalysisActive && <SidebarItem key="keyword-input" renderPriority={ 8 }>
@@ -116,22 +98,14 @@ export default function MetaboxFill( { settings, wincherKeyphrases, setWincherNo
 				{ settings.isKeywordAnalysisActive && <SidebarItem key="additional-keywords-upsell" renderPriority={ 22 }>
 					{ settings.shouldUpsell && <KeywordUpsell /> }
 				</SidebarItem> }
-				{ settings.shouldUpsell && <SidebarItem key="internal-linking-suggestions-upsell" renderPriority={ 23 }>
+				{ settings.isKeywordAnalysisActive && settings.isWincherIntegrationActive &&
+					<SidebarItem key="wincher-seo-performance" renderPriority={ 23 }>
+						<WincherSEOPerformanceModal location="metabox" />
+					</SidebarItem>
+				}
+				{ settings.shouldUpsell && ! isTerm && <SidebarItem key="internal-linking-suggestions-upsell" renderPriority={ 25 }>
 					<InternalLinkingSuggestionsUpsell />
 				</SidebarItem> }
-				{ settings.isKeywordAnalysisActive && settings.isWincherIntegrationActive &&
-					<SidebarItem key="wincher-seo-performance" renderPriority={ 25 }>
-						<MetaboxCollapsible
-							id={ "yoast-wincher-seo-performance-metabox" }
-							title={ __( "Track SEO performance", "wordpress-seo" ) }
-							initialIsOpen={ false }
-							prefixIcon={ { icon: "chart-square-bar", color: colors.$color_grey_medium_dark } }
-							prefixIconCollapsed={ { icon: "chart-square-bar", color: colors.$color_grey_medium_dark } }
-							onToggle={ onToggleWincher }
-						>
-							<WincherSEOPerformance />
-						</MetaboxCollapsible>
-					</SidebarItem> }
 				{ settings.isCornerstoneActive && <SidebarItem key="cornerstone" renderPriority={ 30 }>
 					<CollapsibleCornerstone />
 				</SidebarItem> }
@@ -159,8 +133,6 @@ export default function MetaboxFill( { settings, wincherKeyphrases, setWincherNo
 
 MetaboxFill.propTypes = {
 	settings: PropTypes.object.isRequired,
-	wincherKeyphrases: PropTypes.array.isRequired,
-	setWincherNoKeyphrase: PropTypes.func.isRequired,
 };
 
 /* eslint-enable complexity */

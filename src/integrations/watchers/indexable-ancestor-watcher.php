@@ -89,12 +89,11 @@ class Indexable_Ancestor_Watcher implements Integration_Interface {
 
 	/**
 	 * Registers the appropriate hooks.
+	 *
+	 * @return void
 	 */
 	public function register_hooks() {
 		\add_action( 'wpseo_save_indexable', [ $this, 'reset_children' ], \PHP_INT_MAX, 2 );
-		if ( ! \check_ajax_referer( 'inlineeditnonce', '_inline_edit', false ) ) {
-			\add_action( 'set_object_terms', [ $this, 'build_post_hierarchy' ], 10, 6 );
-		}
 	}
 
 	/**
@@ -104,29 +103,6 @@ class Indexable_Ancestor_Watcher implements Integration_Interface {
 	 */
 	public static function get_conditionals() {
 		return [ Migrations_Conditional::class ];
-	}
-
-	/**
-	 * Validates if the current primary category is still present. If not just remove the post meta for it.
-	 *
-	 * @param int    $object_id Object ID.
-	 * @param array  $terms     Unused. An array of object terms.
-	 * @param array  $tt_ids    An array of term taxonomy IDs.
-	 * @param string $taxonomy  Taxonomy slug.
-	 * @param bool   $append     Whether to append new terms to the old terms.
-	 * @param array  $old_tt_ids Old array of term taxonomy IDs.
-	 */
-	public function build_post_hierarchy( $object_id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids ) {
-		$post = \get_post( $object_id );
-		if ( $this->post_type_helper->is_excluded( $post->post_type ) ) {
-			return;
-		}
-
-		$indexable = $this->indexable_repository->find_by_id_and_type( $post->ID, $post->post_type );
-
-		if ( $indexable instanceof Indexable ) {
-			$this->indexable_hierarchy_builder->build( $indexable );
-		}
 	}
 
 	/**
@@ -175,7 +151,7 @@ class Indexable_Ancestor_Watcher implements Integration_Interface {
 		// Removes the objects that are already present in the children.
 		$existing_post_indexables = \array_filter(
 			$child_indexables,
-			static function( $indexable ) {
+			static function ( $indexable ) {
 				return $indexable->object_type === 'post';
 			}
 		);
@@ -204,6 +180,8 @@ class Indexable_Ancestor_Watcher implements Integration_Interface {
 	 * Updates the indexable hierarchy and indexable permalink.
 	 *
 	 * @param Indexable $indexable The indexable to update the hierarchy and permalink for.
+	 *
+	 * @return void
 	 */
 	protected function update_hierarchy_and_permalink( $indexable ) {
 		if ( \is_a( $indexable, Indexable::class ) ) {
@@ -223,7 +201,7 @@ class Indexable_Ancestor_Watcher implements Integration_Interface {
 	 * @return array List with object ids for the term.
 	 */
 	protected function get_object_ids_for_term( $term_id, $child_indexables ) {
-		$filter_terms = static function( $child ) {
+		$filter_terms = static function ( $child ) {
 			return $child->object_type === 'term';
 		};
 
