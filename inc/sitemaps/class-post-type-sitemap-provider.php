@@ -644,7 +644,7 @@ class WPSEO_Post_Type_Sitemap_Provider implements WPSEO_Sitemap_Provider {
 		 * {@link https://wordpress.org/plugins/page-links-to/} can rewrite permalinks to external URLs.
 		 */
 
-		$bDenyExternalLinks = apply_filters('wpseo_xml_sitemap_allow_external_links',true);
+		$bDenyExternalLinks = apply_filters('wpseo_xml_sitemap_deny_external_links',true);
 
 		if ( $link_type === SEO_Links::TYPE_EXTERNAL && $bDenyExternalLinks ) {
 			return false;
